@@ -113,6 +113,7 @@ fn net_service_start(name: String) -> Node {
         ping_timeout_secs: 20,
         connect_outbound_interval_secs: 1,
         discovery_local_address: true,
+        discovery_announce_check_interval_secs: None,
         upnp: false,
         bootnode_mode: true,
         max_send_buffer: None,
@@ -159,7 +160,7 @@ fn net_service_start(name: String) -> Node {
         discovery_local_address: config.discovery_local_address,
     };
     let disc_meta = SupportProtocols::Discovery.build_meta_with_service_handle(move || {
-        ProtocolHandle::Callback(Box::new(DiscoveryProtocol::new(addr_mgr)))
+        ProtocolHandle::Callback(Box::new(DiscoveryProtocol::new(addr_mgr, None)))
     });
 
     // Identify protocol
@@ -353,14 +354,15 @@ fn test_discovery_behavior() {
         &node2,
         TargetProtocol::Single(SupportProtocols::Identify.protocol_id()),
     );
+    wait_connect_state(&node1, 1);
+
     node3.dial(
         &node2,
         TargetProtocol::Single(SupportProtocols::Identify.protocol_id()),
     );
-
-    wait_connect_state(&node1, 1);
-    wait_connect_state(&node2, 2);
     wait_connect_state(&node3, 1);
+
+    wait_connect_state(&node2, 2);
 
     wait_discovery(&node3);
 
