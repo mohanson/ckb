@@ -75,7 +75,6 @@ impl Spec for MalformedMessageWithWhitelist {
             config.network.whitelist_peers = vec![net.p2p_address().parse().unwrap()]
         });
         node0.start();
-        node1.connect(&node0);
-        net.connect(&node0);
+        net.connect(&node1);
     }
 }
