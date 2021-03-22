@@ -46,4 +46,6 @@ matrix:
   include:
     - name: Integration on Linux
       os: linux
-      script: make CKB_TEST_ARGS="-c 1 --no-fail-fast --no-report" integration
+      script:
+        - sysctl -a
+        - make CKB_TEST_ARGS="-c 1 --no-report MalformedMessageWithWhitelist" integration

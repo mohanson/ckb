@@ -31,7 +31,7 @@ if [ "$EXIT_CODE" != 0 ] && [ "${TRAVIS_REPO_SLUG:-nervosnetwork/ckb}" = "nervos
   if ! command -v sentry-cli &> /dev/null; then
     curl -sL https://sentry.io/get-cli/ | bash
   fi
-  export SENTRY_DSN="https://15373165fbf2439b99ba46684dfbcb12@sentry.nervos.org/7"
+  export SENTRY_DSN="https://0e6fe236fbd84432a8df0aed2c3cd7f1@sentry.nervos.org/5"
   CKB_BIN="../target/debug/ckb"
 
   while [[ "$#" > 1 ]]; do
@@ -65,7 +65,7 @@ EOF
   unset LOGBAK_USER LOGBAK_PASSWORD LOGBAK_SERVER
 
   unset encrypted_82dff4145bbf_iv encrypted_82dff4145bbf_key GITHUB_TOKEN GPG_SIGNER QINIU_ACCESS_KEY QINIU_SECRET_KEY
-  cat "$CKB_INTEGRATION_FAILURE_FILE" | xargs -t -L 1 -I '%' sentry-cli send-event -m '%' -r "$CKB_RELEASE" --logfile "${test_log_file}"
+  #cat "$CKB_INTEGRATION_FAILURE_FILE" | xargs -t -L 1 -I '%' sentry-cli send-event -m '%' -r "$CKB_RELEASE" --logfile "${test_log_file}"
 fi
 
 exit "$EXIT_CODE"
