@@ -75,22 +75,7 @@ impl Spec for MalformedMessageWithWhitelist {
             config.network.whitelist_peers = vec![net.p2p_address().parse().unwrap()]
         });
         node0.start();
-        net.connect(&node0);
-
-        let rpc_client = node0.rpc_client();
-        let ret = wait_until(10, || rpc_client.get_peers().len() == 1);
-        assert!(ret, "Node0 should connect test node");
-
-        info!("Send malformed message to node0 twice");
-        net.send(&node0, SupportProtocols::Sync, vec![0, 0, 0, 0].into());
-        net.send(&node0, SupportProtocols::Sync, vec![0, 1, 2, 3].into());
-
         node1.connect(&node0);
-
-        let rpc_client = node0.rpc_client();
-        let ret = wait_until(10, || rpc_client.get_peers().len() == 2);
-        assert!(ret, "Node0 should keep connection with test node");
-        let ret = wait_until(10, || rpc_client.get_banned_addresses().is_empty());
-        assert!(ret, "Node0 should not ban test node");
+        net.connect(&node0);
     }
 }
