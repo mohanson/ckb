@@ -46,8 +46,6 @@ matrix:
   include:
     - name: Integration on Linux
       os: linux
-      before_script:
-        - sudo sysctl -w "net.ipv4.tcp_tw_reuse=1"
       script:
         - sysctl -a
         - make CKB_TEST_ARGS="-c 1 --no-report MalformedMessageWithWhitelist" integration

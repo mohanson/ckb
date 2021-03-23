@@ -70,7 +70,11 @@ impl Spec for MalformedMessageWithWhitelist {
             "Test node should receive GetHeaders message from node0"
         );
 
+        #[cfg(not(target_os = "linux"))]
         node0.stop();
+        #[cfg(target_os = "linux")]
+        node0.stop_gracefully();
+
         node0.modify_app_config(|config| {
             config.network.whitelist_peers = vec![net.p2p_address().parse().unwrap()]
         });
