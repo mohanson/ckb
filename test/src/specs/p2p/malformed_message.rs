@@ -78,6 +78,11 @@ impl Spec for MalformedMessageWithWhitelist {
         node0.modify_app_config(|config| {
             config.network.whitelist_peers = vec![net.p2p_address().parse().unwrap()]
         });
+
+        info!("Sleep 3 seconds ...");
+        ::std::thread::sleep(::std::time::Duration::from_secs(3));
+        info!("Wake up.");
+
         node0.start();
         net.connect(&node0);
     }
