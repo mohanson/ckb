@@ -22,19 +22,19 @@ use ckb_types::{
     packed::{Byte32, Byte32Vec, BytesVec, CellInputVec, CellOutput, OutPoint, Script},
     prelude::*,
 };
+#[cfg(not(has_asm))]
+use ckb_vm::{
+    machine::VERSION1, DefaultCoreMachine, DefaultMachineBuilder, Error as VMInternalError,
+    InstructionCycleFunc, SparseMemory, SupportMachine, Syscalls, TraceMachine, WXorXMemory,
+};
 #[cfg(has_asm)]
 use ckb_vm::{
     machine::{
         asm::{AsmCoreMachine, AsmMachine},
-        VERSION0,
+        VERSION1,
     },
     DefaultMachineBuilder, Error as VMInternalError, InstructionCycleFunc, SupportMachine,
-    Syscalls, ISA_B, ISA_IMC,
-};
-#[cfg(not(has_asm))]
-use ckb_vm::{
-    DefaultCoreMachine, DefaultMachineBuilder, Error as VMInternalError, InstructionCycleFunc,
-    SparseMemory, SupportMachine, Syscalls, TraceMachine, WXorXMemory,
+    Syscalls, ISA_B, ISA_IMC, ISA_MOP,
 };
 use std::collections::HashMap;
 use std::convert::TryFrom;
@@ -432,11 +432,11 @@ impl<'a, DL: CellDataProvider + HeaderProvider> TransactionScriptsVerifier<'a, D
     fn run(&self, script_group: &ScriptGroup, max_cycles: Cycle) -> Result<Cycle, ScriptError> {
         let program = self.extract_script(&script_group.script)?;
         #[cfg(has_asm)]
-        let core_machine = AsmCoreMachine::new(ISA_IMC | ISA_B, VERSION0, max_cycles);
+        let core_machine = AsmCoreMachine::new(ISA_IMC | ISA_B | ISA_MOP, VERSION1, max_cycles);
         #[cfg(not(has_asm))]
         let core_machine = DefaultCoreMachine::<u64, WXorXMemory<u64, SparseMemory<u64>>>::new(
-            ISA_IMC | ISA_B,
-            VERSION0,
+            ISA_IMC | ISA_B | ISA_MOP,
+            VERSION1,
             max_cycles,
         );
         let machine_builder = DefaultMachineBuilder::<CoreMachineType>::new(core_machine)

@@ -167,7 +167,9 @@ impl<'a, Mac: SupportMachine, DL: CellDataProvider> Syscalls<Mac> for Exec<'a, D
             addr += 8;
         }
 
-        machine.reset();
+        let cycles = machine.cycles();
+        machine.reset(machine.max_cycles());
+        machine.set_cycles(cycles);
 
         match machine.load_elf(&data, true) {
             Ok(size) => {
