@@ -1985,4 +1985,67 @@ mod tests {
         let verifier = TransactionScriptsVerifier::new(&rtx, &data_loader);
         assert!(verifier.verify(600000).is_ok());
     }
+
+    #[test]
+    fn check_exec_from_cell_dep() {
+        let exec_caller_cell_data = Bytes::from(
+            std::fs::read(
+                Path::new(env!("CARGO_MANIFEST_DIR")).join("testdata/exec_caller_from_cell_dep"),
+            )
+            .unwrap(),
+        );
+        let exec_caller_cell = CellOutput::new_builder()
+            .capacity(Capacity::bytes(exec_caller_cell_data.len()).unwrap().pack())
+            .build();
+
+        let exec_callee_cell_data = Bytes::from(
+            std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("testdata/exec_callee"))
+                .unwrap(),
+        );
+        let exec_callee_cell = CellOutput::new_builder()
+            .capacity(Capacity::bytes(exec_callee_cell_data.len()).unwrap().pack())
+            .build();
+
+        let exec_caller_script = Script::new_builder()
+            .hash_type(ScriptHashType::Data.into())
+            .code_hash(CellOutput::calc_data_hash(&exec_caller_cell_data))
+            .build();
+        let output = CellOutputBuilder::default()
+            .capacity(capacity_bytes!(100).pack())
+            .lock(exec_caller_script.clone())
+            .build();
+        let input = CellInput::new(OutPoint::null(), 0);
+
+        let transaction = TransactionBuilder::default().input(input).build();
+
+        let dummy_cell = CellMetaBuilder::from_cell_output(output, Bytes::new())
+            .transaction_info(default_transaction_info())
+            .build();
+        let exec_caller_cell = CellMetaBuilder::from_cell_output(
+            exec_caller_cell.clone(),
+            exec_caller_cell_data.to_owned(),
+        )
+        .transaction_info(default_transaction_info())
+        .build();
+
+        let exec_callee_cell = CellMetaBuilder::from_cell_output(
+            exec_callee_cell.clone(),
+            exec_callee_cell_data.to_owned(),
+        )
+        .transaction_info(default_transaction_info())
+        .build();
+
+        let rtx = ResolvedTransaction {
+            transaction,
+            resolved_cell_deps: vec![exec_caller_cell, exec_callee_cell],
+            resolved_inputs: vec![dummy_cell],
+            resolved_dep_groups: vec![],
+        };
+
+        let store = new_store();
+        let data_loader = DataLoaderWrapper::new(&store);
+
+        let verifier = TransactionScriptsVerifier::new(&rtx, &data_loader);
+        assert!(verifier.verify(600000).is_ok());
+    }
 }
